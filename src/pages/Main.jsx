@@ -1,6 +1,56 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { styled } from "styled-components";
 
 const Main = () => {
+  const [initialMapData, setInitialMapData] = useState(null);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const initializeNaverMap = () => {
+      var mapOptions = {
+        center: new window.naver.maps.LatLng(37.3595704, 127.105399),
+        zoom: 10,
+      };
+      var map = new window.naver.maps.Map("map", mapOptions);
+
+      var markerOptions = {
+        position: new window.naver.maps.LatLng(37.3595704, 127.105399),
+        map: map,
+      };
+      var marker = new window.naver.maps.Marker(markerOptions);
+      setInitialMapData(marker);
+    };
+    initializeNaverMap();
+  }, []);
+
+  const handleSearch = async () => {
+    if (searchQuery.trim() !== "") {
+      try {
+        // API 요청
+        const response = await axios.get(
+          `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=lv007lcqyg&submodules=geocoder`,
+          {
+            params: {
+              query: searchQuery,
+            },
+            headers: {
+              "X-NCP-APIGW-API-KEY-ID": "lv007lcqyg",
+              "X-NCP-APIGW-API-KEY": "2M4WLW023D6tTHZMdurpzcVBziFuKLtbvUumgYEw",
+            },
+          }
+        );
+
+        // 데이터 출력 위치 수정
+        console.log("API 응답:", response.data);
+      } catch (err) {
+        // 에러 상세 내용 출력
+        console.error("에러 상세 정보:", err);
+      }
+    }
+  };
+
   return (
     <>
       <Header>
@@ -11,32 +61,34 @@ const Main = () => {
               <input
                 type="text"
                 placeholder="Search for any IP address or domain"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button>>></button>
+              <button onClick={handleSearch}>검색</button>
             </TextBox>
             <InformationBox>
               <IpAddressWrapper>
                 <div>
                   <h5>IP ADDRESS</h5>
-                  <div>192.212.174.101</div>
+                  <div></div>
                 </div>
               </IpAddressWrapper>
               <LocationWrapper>
                 <div>
                   <h5>LOCATION</h5>
-                  <div>NY</div>
+                  <div></div>
                 </div>
               </LocationWrapper>
               <TimeZoneWrapper>
                 <div>
                   <h5>TIMEZONE</h5>
-                  <div>192.212.174.101</div>
+                  <div></div>
                 </div>
               </TimeZoneWrapper>
               <IspWrapper>
                 <div>
                   <h5>ISP</h5>
-                  <div>192.212.174.101</div>
+                  <div></div>
                 </div>
               </IspWrapper>
             </InformationBox>
@@ -44,7 +96,7 @@ const Main = () => {
         </div>
       </Header>
 
-      <Maps>지도</Maps>
+      <Maps id="map">지도</Maps>
     </>
   );
 };
@@ -107,6 +159,7 @@ const InformationBox = styled.div`
   background-color: white;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
   border-radius: 10px;
+  z-index: 1;
 `;
 
 const IpAddressWrapper = styled.div`
